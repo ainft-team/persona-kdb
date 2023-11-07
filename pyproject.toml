@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "persona-kdb"
+version = "0.1.0"
+description = "Collect knowledges from crowds to evolve persona AI"
+authors = ["Jungwoo Pyo <jungwoo_pyo@comcom.ai>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "0.100.0"
+uvicorn = {version = "0.22.0", extras = ["standard"]}
+pydantic = "^2.4.2"
+openai = "^0.28.1"
+langchain = "0.0.287"
+langchain-experimental = "0.0.8"
+google-api-python-client = "2.94.0"
+google-auth-httplib2 = "^0.1.1"
+google-auth-oauthlib = "^1.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
