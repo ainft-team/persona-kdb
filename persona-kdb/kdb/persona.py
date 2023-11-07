@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -27,13 +27,26 @@ def _read_range(sheet_id, range_name):
     result = spreadsheet_service.spreadsheets().values().get(
     spreadsheetId=sheet_id, range=range_name).execute()
     rows = result.get('values', [])
-    print('{0} rows retrieved.'.format(rows))
     return rows
 
-def get_persona_info(sheet_id) -> List[List[str]]:
+def get_persona_info(sheet_id) -> Dict:
     try:
         sheet_name = 'Persona'
-        fetched = _read_range(sheet_id, f'{sheet_name}!B4:B11')
+        fetched = _read_range(sheet_id, f'{sheet_name}!A4:B11')
+        ret = {}
+        for elem in fetched:
+            ret[elem[0]] = elem[1]
+        return ret
+    except IndexError as err:
+        print(err, f"Please fill out all the values in the {sheet_name} spreadsheet")
+    except HttpError as err:
+        print(err)
+
+def get_variable_keys(sheet_id) -> List[str]:
+    try:
+        sheet_name = 'Persona'
+        fetched = _read_range(sheet_id, f'{sheet_name}!A4:A11')
+        fetched = (lambda: [k[0] for k in fetched])()
         return fetched
     except HttpError as err:
         print(err)
@@ -45,7 +58,3 @@ def get_persona_template(sheet_id, version='latest') -> str:
         return fetched[0][0]
     except HttpError as err:
         print(err)
-    
-if __name__ == "__main__":
-    get_persona_info(SPREADSHEET_ID)
-    print(get_persona_template(SPREADSHEET_ID, 'latest'))
