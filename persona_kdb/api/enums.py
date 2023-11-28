@@ -1,12 +1,12 @@
 from enum import Enum
 
 # Status
-class ConversationStatus(str, Enum):
-    PREPARED = "prepared"
-    IN_PROGRESS = "in_progress"
 class MessageStatus(str, Enum):
     SUCCESS = "success"
     ERROR = "error"
+    IN_PROGRESS = "in_progress"
+class ConversationStatus(str, Enum):
+    PREPARED = "prepared"
     IN_PROGRESS = "in_progress"
 class SoulstoneRewardStatus(str, Enum):
     ACCEPTED = "accepted"
@@ -18,7 +18,7 @@ class UserLevel(str, Enum):
     ADMIN = "admin"
     HOLDER = "holder"
     GUEST = "guest"
-class RoleType(str, Enum):
+class UserType(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"
 class MessageType(str, Enum):

@@ -29,6 +29,7 @@ class User(BaseModel):
 #"v2_messages"
 # the key of the document is the message id
 class Message(BaseModel):
+    id: str
     type: MessageType
     content: str
     status: str
@@ -38,6 +39,7 @@ class Message(BaseModel):
 #"v2_conversations"
 # the key of the document is the first message id
 class Conversation(BaseModel):
+    id: str
     type: ConversationType    
     status: Optional[str]
     message_count: Optional[int]
@@ -45,4 +47,4 @@ class Conversation(BaseModel):
     updated_at: Optional[Union[float, str, datetime]]
     starter_user: str # Discord ID of the user or bot who started the conversation
     participants: dict[str, int] # {discord_id: message_count}
-    messages: dict[str, Message] # {message_id: Message}
+    messages: dict[str, Message] # {message_order: Message}
