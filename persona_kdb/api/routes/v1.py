@@ -7,7 +7,7 @@ from collections import Counter
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
-from api.db import get_db, get_rtdb
+from api.db import get_db
 from api.schema import (
     User, 
     Message, 
