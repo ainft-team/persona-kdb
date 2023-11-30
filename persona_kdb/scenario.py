@@ -29,18 +29,29 @@ class Scenario:
         print(get_kg(sheet_id=sheet_id))
     @staticmethod
     def test_get_knowledge_base():
-        from components.kdb.trainable_data import fetch_knowledge_base
+        from components.kdb.gsheet.trainable_data import fetch_knowledge_base
         fetch_knowledge_base()
     @staticmethod
     def test_append_knowledge():
-        from components.kdb.trainable_data import append_knowledge
+        from components.kdb.gsheet.trainable_data import append_knowledge
         append_knowledge(content="Hello, Mars!")
     @staticmethod
     def test_update_vectordb():
-        from components.kdb.trainable_data import fetch_knowledge_base
-        from persona_kdb.components.core.vectordb import vdb_update
+        from os import getenv
+        from components.kdb.gsheet.trainable_data import fetch_knowledge_base
+        from components.core.vectordb import vdb_update
+        import pinecone
 
+        #fetch knowledge base from gsheet
         docs = fetch_knowledge_base()
+
+        # flush existing document
+        pinecone.init(api_key=getenv("PINECONE_API_KEY"), 
+                      environment=getenv("PINECONE_ENV", "northamerica-northeast1-gcp"))
+        index = pinecone.Index(getenv("PINECONE_INDEX", "search-and-discovery"))
+        index.delete(namespace=getenv("PINECONE_NAMESPACE", "kdb_soulfiction"), delete_all=True)
+
+        # update vector database
         vdb_update(docs=docs)
     @staticmethod
     def test_mars_with_knowledge():
@@ -130,7 +141,7 @@ if __name__ == "__main__":
     # Scenario.test_get_kg()
     # Scenario.test_get_knowledge_base()
     # Scenario.test_append_knowledge()
-    # Scenario.test_update_vectordb()
+    Scenario.test_update_vectordb()
     # Scenario.test_mars_with_knowledge()
     # Scenario.test_mars_questionaire()
-    Scenario.test_mars_ens_knowledge()
+    # Scenario.test_mars_ens_knowledge()

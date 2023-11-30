@@ -5,7 +5,7 @@ load_dotenv(find_dotenv('.env'))
 
 from components.kdb.gsheet.spreadsheet_utils import read_range, append_values
 
-def fetch_knowledge_base() -> List[List[str]]:
+def fetch_knowledge_base(remove_header=True) -> List[List[str]]:
     """
     Fetches the knowledge base from the database and returns it as a list of
     dictionaries.
@@ -18,7 +18,7 @@ def fetch_knowledge_base() -> List[List[str]]:
     target_col = "C"
 
     raw_data = read_range(sheet_id, f"{sheet_name}!{target_col}:{target_col}")
-    return raw_data
+    return raw_data[1:] if remove_header else raw_data
 
 def append_knowledge(content: str):
     sheet_id = getenv("GOOGLE_SPREADSHEET_ID")
