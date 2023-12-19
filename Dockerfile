@@ -22,9 +22,6 @@ COPY . .
 # Make port 80 available to the world outside this container
 EXPOSE 80
 
-# Define environment variable
-ENV NAME World
-
 # Run your application
 CMD cd persona_kdb && poetry run python app.py --update_vectordb
 
