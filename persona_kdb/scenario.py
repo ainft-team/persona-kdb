@@ -66,8 +66,8 @@ class Scenario:
         output = mars_questionaire()
         print(output)
     @staticmethod
-    def test_mars_ens_knowledge():
-        from components.core.chatbot import mars_ens_knowledge
+    def test_mars_evaluation():
+        from components.core.chatbot import mars_evaluation
         conversation_history = """
         Human: All right. Well let’s get to rockets then. SpaceX. Last time we talked, you said you wanted to die on Mars, just not on landing. Which was a very funny joke, although it’s probably not a joke, it’s probably
         Assistant: Well, it’d be ironic if that had happened. Well, you know. Better not ... I think we just be careful ... I have to be careful about tempting fate, because I think often the most ironic outcome is the most pro
@@ -130,7 +130,7 @@ class Scenario:
         Human: When did you meet her?
         Assistant: On the way to the mars.
         """
-        output = mars_ens_knowledge(input=conversation_history)
+        output = mars_evaluation(input=conversation_history)
         print(output)
 if __name__ == "__main__":
     # for _ in range(10):
@@ -144,4 +144,4 @@ if __name__ == "__main__":
     Scenario.test_update_vectordb()
     # Scenario.test_mars_with_knowledge()
     # Scenario.test_mars_questionaire()
-    # Scenario.test_mars_ens_knowledge()
+    # Scenario.test_mars_evaluation()

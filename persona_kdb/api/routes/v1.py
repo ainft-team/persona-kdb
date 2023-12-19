@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse # for SSE(Server Sent Events)
 # from apscheduler.schedulers.background import BackgroundScheduler
@@ -34,9 +35,10 @@ from api.utils import now, encode_query
 from components.core.chatbot import (
     mars, 
     mars_with_knowledge,
-    mars_ens_knowledge,
+    mars_evaluation,
     mars_questionaire,
 )
+from components.kdb.firebase import Logs
 
 
 v1_router = APIRouter()
@@ -52,7 +54,7 @@ async def generate_question(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal Server Error, the core langchain doesn't work{'' if _debug else str(e)}"
+            detail=f"Internal Server Error, the core langchain doesn't work{'' if not _debug else str(e)}"
         )
     return MarsQuestionMessageModel(
         status=MessageStatus.SUCCESS,
@@ -73,18 +75,63 @@ async def reply(
     db = Depends(get_db),
 ):
     try:
-        response = mars_with_knowledge(input=content)
+        response = mars_with_knowledge(
+            parent_message_id=parent_message_id,
+            db=db,
+            input=content,
+        )
+        # output parsing
+        response = response.strip("```json").strip("```").strip("\n")
+        response = json.loads(response)
+        conversation_id = Logs.get_root_message_id(db, parent_message_id)
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal Server Error, the core langchain doesn't work{'' if _debug else str(e)}"
+            detail=f"Internal Server Error on reply or parse error {'' if not _debug else str(e)}"
         )
     return MarsReplyMessageModel(
         status=MessageStatus.SUCCESS,
-        content=response,
+        type=MessageType.ASSISTANT_REPLY if response["reward_triggering"] == False else MessageType.REQUEST_REWARD,
+        content=response["output"],
         from_user_id=sender_id,
         from_username=f"{sender_name}#{sender_discriminator}",
-        from_conversation_id=parent_message_id,
+        from_conversation_id=conversation_id,
         parent_message_id=parent_message_id,
+        timestamp=now(),
+    ).dict()
+
+@v1_router.post("/evaluate_conversation", response_model=SoulstoneRewardModel)
+async def evaluate_conversation(
+    conversation_id: str = Query(..., 
+                    description="conversation ID",
+                    example="10000000000000"),
+    db = Depends(get_db),
+):
+    try:
+        reward_coeff = 1
+        conversation_history = Logs.get_conversation_history(db, conversation_id)
+        participants = Logs.get_participants(db, conversation_id)
+        response = mars_evaluation(
+            input=conversation_history,
+        )
+        # output parsing
+        response = response.replace("\n", "").strip("```json").strip("```")
+        response = json.loads(response)
+
+        reward_amount = reward_coeff * response["score"]
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal Server Error, the core langchain doesn't work{'' if not _debug else str(e)}"
+        )
+    return SoulstoneRewardModel(
+        status=SoulstoneRewardStatus.ACCEPTED if response['score'] > 0 else SoulstoneRewardStatus.REJECTED,
+        recipient_id=participants[0],
+        conversation_id=conversation_id,
+        amount=reward_amount,
+        summarized_knowledge=response['summary'],
+        reason=response['reason'],
         timestamp=now(),
     ).dict()

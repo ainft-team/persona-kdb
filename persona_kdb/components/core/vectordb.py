@@ -47,9 +47,9 @@ def _store(splits, embedding=OpenAIEmbeddings()):
         print(e)
         return False
     
-def vdb_update(docs):
+def vdb_update(docs, chunk_size=200, chunk_overlap=70):
     docs = _loader(docs)
-    splits =_splitter(docs, 1000, 200)
+    splits =_splitter(docs, chunk_size, chunk_overlap)
     if _store(splits, embedding=OpenAIEmbeddings(openai_api_key=getenv("OPENAI_API_KEY"))):
         print("Successfully updated the vector database.")
         return True

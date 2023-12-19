@@ -1,5 +1,7 @@
+import json
 from os import getenv
 from operator import itemgetter
+from google.cloud.firestore_v1.client import Client
 
 from langchain.chains import LLMChain, RetrievalQA, StuffDocumentsChain
 from langchain.chains.router import LLMRouterChain
@@ -19,8 +21,9 @@ from components.kdb.gsheet.persona import (
     get_variable_keys, 
     get_persona_template, 
     get_questionaire_template,
-    get_ens_knowledge_template,
+    get_evaluation_template,
 )
+from components.kdb.firebase import Logs
 from components.core.vectordb import vdb_index, vdb_retriever, format_docs
 from components.core.llms import gpt3_5, gpt3_5_chat
 
@@ -33,13 +36,13 @@ def mars_openai_assistant_chain_factory(**kwargs):
 # Chain Factory
 #####
 
-def mars_ens_knowledge_chain_factory(**kwargs):
+def mars_evaluation_chain_factory(**kwargs):
     sheet_id = kwargs.get("sheet_id")
     output_key = kwargs.get("output_key", "output")
-    input_vars= get_variable_keys(sheet_id)
+    input_vars= get_variable_keys(sheet_id, 'F2:F2')
 
     mars_template = PromptTemplate(
-        template=get_ens_knowledge_template(sheet_id),
+        template=get_evaluation_template(sheet_id),
         input_variables=input_vars,
     )
     chain = (
@@ -80,6 +83,9 @@ def mars_questionaire_chain_factory(**kwargs):
 def mars_with_knowledge_chain_factory(**kwargs):
     sheet_id = kwargs.get("sheet_id")
     output_key = kwargs.get("output_key", "output")
+    firebase_client: Client = kwargs.get("db")
+    parent_message_id = kwargs.get("parent_message_id")
+    conversation_id = Logs.get_root_message_id(firebase_client, parent_message_id)
 
     prompt = PromptTemplate(
         template=get_persona_template(sheet_id),
@@ -88,17 +94,26 @@ def mars_with_knowledge_chain_factory(**kwargs):
     retriever = vdb_retriever(
         "similarity", 
         vdb_index(), 
-        k=1 # k should be 2 or less
+        k=5 # k should be 2 or less
     )
+    conversation_history = RunnableLambda(
+        lambda _: Logs.get_conversation_history(
+            firebase_client, 
+            conversation_id,
+        )[:-1]
+    )
+
     rag_chain = (
         {
             "context": retriever | format_docs,
+            "conversation_history": conversation_history,
             "question": RunnablePassthrough(),
         }
         | prompt
         | gpt3_5_chat
         | StrOutputParser()
     )
+
     return rag_chain
 
 def mars_chain_factory(**kwargs):
@@ -125,7 +140,7 @@ def mars_chain_factory(**kwargs):
 # Chain with each prompt
 #####
 
-def mars_ens_knowledge(input):
+def mars_evaluation(input):
     """
         Mars Extract & Summarize Knowledge Chain
     """
@@ -133,7 +148,7 @@ def mars_ens_knowledge(input):
 
     sheet_id = getenv("GOOGLE_SPREADSHEET_ID")
 
-    output = mars_ens_knowledge_chain_factory(
+    output = mars_evaluation_chain_factory(
         sheet_id=sheet_id, 
         output_key="output",
     ).invoke(input)
@@ -149,12 +164,18 @@ def mars_questionaire():
 
     return output
 
-def mars_with_knowledge(input="Hello, Elon?"):
+def mars_with_knowledge(
+    parent_message_id,
+    db,
+    input="Hello, Elon?",
+):
     sheet_id = getenv("GOOGLE_SPREADSHEET_ID")
 
     output = mars_with_knowledge_chain_factory(
         sheet_id=sheet_id, 
         output_key="output",
+        parent_message_id=parent_message_id,
+        db=db,
     ).invoke(input)
 
     return output

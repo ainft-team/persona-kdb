@@ -4,12 +4,19 @@ from langchain.chat_models import ChatOpenAI
 
 gpt3_5 = OpenAI(
     temperature=0.3,
-    max_tokens=5000,
-    model_name='gpt-3.5-turbo-16k',
+    max_tokens=4096,
+    model_name='gpt-3.5-turbo-1106',
     streaming=False,
 )
 
 gpt3_5_chat = ChatOpenAI(
+    temperature=0.7,
+    max_tokens=4096,
+    model_name='gpt-3.5-turbo-1106',
+    streaming=True,
+)
+
+gpt3_5_chat_0_3 = ChatOpenAI(
     temperature=0.3,
     max_tokens=4096,
     model_name='gpt-3.5-turbo-1106',

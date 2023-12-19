@@ -25,7 +25,8 @@ class MessageType(str, Enum):
     USER_FIRST = "user_first"
     ASSISTANT_FIRST = "assistant_first"
     USER_REPLY = "user_reply"
-    ASSISTANT_REPLY = "assiatant_reply"
+    ASSISTANT_REPLY = "assistant_reply"
+    REQUEST_REWARD = "request_reward"
 class ConversationType(str, Enum):
     START_BY_USER = "start_by_user"
     USER_MENTION_BY_ASSISTANT = "user_mention_by_assistant"

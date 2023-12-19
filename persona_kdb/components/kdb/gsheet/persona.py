@@ -55,7 +55,7 @@ def get_questionaire_template(sheet_id, version='latest') -> str:
             return fetched[version_list.index(version)][1]
     except HttpError as err:
         print(err)
-def get_ens_knowledge_template(sheet_id, version='latest') -> str:
+def get_evaluation_template(sheet_id, version='latest') -> str:
     try:
         sheet_name = 'persona'
         sheet_range = f'{sheet_name}!E18:F30'

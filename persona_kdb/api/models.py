@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Union, Dict
 from datetime import datetime
 
-from api.enums import ConversationStatus, MessageStatus, SoulstoneRewardStatus
+from api.enums import ConversationStatus, MessageStatus, SoulstoneRewardStatus, MessageType
 from api.schema import Message, Conversation
     
 class ConversationModel(BaseModel):
@@ -21,6 +21,7 @@ class MarsQuestionMessageModel(BaseModel):
     timestamp: Optional[Union[float, str, datetime]]
 class MarsReplyMessageModel(BaseModel):
     status: MessageStatus
+    type: MessageType
     content: Optional[str]
     from_user_id: str
     from_username: str
@@ -30,7 +31,9 @@ class MarsReplyMessageModel(BaseModel):
 
 class SoulstoneRewardModel(BaseModel):
     status: SoulstoneRewardStatus
-    discord_id: Optional[str]
-    thread_id: Optional[str]
+    recipient_id: Optional[str]
+    conversation_id: Optional[str]
     amount: Optional[float]
+    summarized_knowledge: Optional[str]
+    reason: Optional[str]
     timestamp: Optional[Union[float, str, datetime]]
