@@ -17,7 +17,7 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction
 
 # Make port 80 available to the world outside this container
-EXPOSE 80
+EXPOSE 5555
 
 # Run your application
 CMD cd persona_kdb && poetry run python app.py --update_vectordb
