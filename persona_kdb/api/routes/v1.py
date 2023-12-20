@@ -109,9 +109,9 @@ async def evaluate_conversation(
     db = Depends(get_db),
 ):
     try:
-        reward_coeff = 1
         conversation_history = Logs.get_conversation_history(db, conversation_id)
         participants = Logs.get_participants(db, conversation_id)
+        recipient_id = participants[0]
         response = mars_evaluation(
             input=conversation_history,
         )
@@ -119,7 +119,13 @@ async def evaluate_conversation(
         response = response.replace("\n", "").strip("```json").strip("```")
         response = json.loads(response)
 
-        reward_amount = reward_coeff * response["score"]
+        multiplier_ref = db.collection("v2_multiplier").document(recipient_id).get()
+        if multiplier_ref.exists:
+            multiplier = multiplier_ref.to_dict()["multiplier"]
+        else:
+            multiplier = 0
+
+        reward_amount = float(multiplier) * response["score"]
 
     except Exception as e:
         raise HTTPException(
