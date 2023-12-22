@@ -33,6 +33,7 @@ class SoulstoneRewardModel(BaseModel):
     status: SoulstoneRewardStatus
     recipient_id: Optional[str]
     conversation_id: Optional[str]
+    multiplier: Optional[float]
     amount: Optional[float]
     summarized_knowledge: Optional[str]
     reason: Optional[str]
