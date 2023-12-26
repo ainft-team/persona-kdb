@@ -32,7 +32,7 @@ class QueryPreset:
     def get_query_value(self):
         return list(self.query.values())[0]
 
-class Logs:
+class FirebaseUtils:
     @staticmethod
     def get_conversation_history(client: Client, conversation_id: str):
         try:

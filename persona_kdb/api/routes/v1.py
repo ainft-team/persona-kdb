@@ -38,8 +38,10 @@ from components.core.chatbot import (
     mars_evaluation,
     mars_questionaire,
 )
-from components.kdb.firebase import Logs
-
+from components.kdb.firebase import FirebaseUtils
+from components.kdb.gsheet.trainable_data import (
+    append_knowledge
+)
 
 v1_router = APIRouter()
 _debug=True
@@ -83,7 +85,7 @@ async def reply(
         # output parsing
         response = response.strip("```json").strip("```").strip("\n")
         response = json.loads(response)
-        conversation_id = Logs.get_root_message_id(db, parent_message_id)
+        conversation_id = FirebaseUtils.get_root_message_id(db, parent_message_id)
 
     except Exception as e:
         raise HTTPException(
@@ -109,8 +111,8 @@ async def evaluate_conversation(
     db = Depends(get_db),
 ):
     try:
-        conversation_history = Logs.get_conversation_history(db, conversation_id)
-        participants = Logs.get_participants(db, conversation_id)
+        conversation_history = FirebaseUtils.get_conversation_history(db, conversation_id)
+        participants = FirebaseUtils.get_participants(db, conversation_id)
         recipient_id = participants[0]
         response = mars_evaluation(
             input=conversation_history,
@@ -126,7 +128,17 @@ async def evaluate_conversation(
             multiplier = 0
 
         reward_amount = float(multiplier) * response["score"]
-
+        if reward_amount > 0:
+            # append the summary of conversation to gsheet trainable_data
+            append_knowledge(
+                conversation_id=conversation_id,
+                knowledge_type="conversation",
+                content=response["summary"],
+                created_at=now(),
+                user_id=recipient_id,
+                reward=reward_amount,
+            )
+            
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

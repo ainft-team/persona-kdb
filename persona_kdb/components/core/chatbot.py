@@ -23,7 +23,7 @@ from components.kdb.gsheet.persona import (
     get_questionaire_template,
     get_evaluation_template,
 )
-from components.kdb.firebase import Logs
+from components.kdb.firebase import FirebaseUtils
 from components.core.vectordb import vdb_index, vdb_retriever, format_docs
 from components.core.llms import gpt3_5, gpt3_5_chat
 
@@ -85,7 +85,7 @@ def mars_with_knowledge_chain_factory(**kwargs):
     output_key = kwargs.get("output_key", "output")
     firebase_client: Client = kwargs.get("db")
     parent_message_id = kwargs.get("parent_message_id")
-    conversation_id = Logs.get_root_message_id(firebase_client, parent_message_id)
+    conversation_id = FirebaseUtils.get_root_message_id(firebase_client, parent_message_id)
 
     prompt = PromptTemplate(
         template=get_persona_template(sheet_id),
@@ -97,7 +97,7 @@ def mars_with_knowledge_chain_factory(**kwargs):
         k=5 # k should be 2 or less
     )
     conversation_history = RunnableLambda(
-        lambda _: Logs.get_conversation_history(
+        lambda _: FirebaseUtils.get_conversation_history(
             firebase_client, 
             conversation_id,
         )[:-1]

@@ -20,13 +20,28 @@ def fetch_knowledge_base(remove_header=True) -> List[List[str]]:
     raw_data = read_range(sheet_id, f"{sheet_name}!{target_col}:{target_col}")
     return raw_data[1:] if remove_header else raw_data
 
-def append_knowledge(content: str):
+def append_knowledge(
+        conversation_id,
+        knowledge_type,
+        content,
+        created_at,
+        user_id,
+        reward
+):
     sheet_id = getenv("GOOGLE_SPREADSHEET_ID")
     sheet_name = "trainable_data"
     target_col = "C"
+    assert(knowledge_type in ['knowledge', 'conversation'])
     
     try:
-        _values = [['threadId', 'knowledge', content]] # The row is appended from the first column value
+        _values = [[
+            conversation_id, 
+            knowledge_type, 
+            content,
+            created_at,
+            user_id,
+            reward 
+            ]] # The row is appended from the first column value
         result = append_values(
             sheet_id=sheet_id,
             range_name=f"{sheet_name}!{target_col}:D",
