@@ -111,9 +111,11 @@ async def evaluate_conversation(
     db = Depends(get_db),
 ):
     try:
+        #FIXME(jakepyo): replace Mars Discord ID to not hard-coded one
+        MARS_DISCORD_ID = "1022765839067398155"
         conversation_history = FirebaseUtils.get_conversation_history(db, conversation_id)
         participants = FirebaseUtils.get_participants(db, conversation_id)
-        recipient_id = participants[0]
+        recipient_id = participants[0] if participants[0] != MARS_DISCORD_ID else participants[1]
         response = mars_evaluation(
             input=conversation_history,
         )

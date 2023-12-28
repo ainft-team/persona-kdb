@@ -65,7 +65,7 @@ class FirebaseUtils:
         try:
             conversations = client.collection("v2_conversations").document(conversation_id).get()
             if conversations.exists:
-                return [user_id for user_id in conversations.to_dict()['participants'].keys()]
+                return [str(user_id) for user_id in conversations.to_dict()['participants'].keys()]
             else:
                 return [""]
         except Exception as e:
