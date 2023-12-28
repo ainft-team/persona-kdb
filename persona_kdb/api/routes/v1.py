@@ -148,7 +148,7 @@ async def evaluate_conversation(
         )
     return SoulstoneRewardModel(
         status=SoulstoneRewardStatus.ACCEPTED if response['score'] > 0 else SoulstoneRewardStatus.REJECTED,
-        recipient_id=participants[0],
+        recipient_id=recipient_id,
         conversation_id=conversation_id,
         multiplier=multiplier,
         amount=reward_amount,
