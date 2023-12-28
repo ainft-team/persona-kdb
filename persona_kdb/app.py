@@ -1,3 +1,7 @@
+from os import getenv
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv('.env'))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -15,7 +19,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8102",
-        "http://34.42.26.115:8102"
+        getenv("DISCORD_BOT_HOST")
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -25,10 +29,6 @@ app.include_router(v1_router)
 
 if __name__ == "__main__":
     if args.update_vectordb:
-        from os import getenv
-        from dotenv import load_dotenv, find_dotenv
-        load_dotenv(find_dotenv('.env'))
-
         from components.kdb.gsheet.trainable_data import fetch_knowledge_base
         from components.core.vectordb import vdb_update
         import pinecone
