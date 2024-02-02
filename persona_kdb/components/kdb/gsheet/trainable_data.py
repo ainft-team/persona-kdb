@@ -1,7 +1,7 @@
 from os import getenv
 from dotenv import load_dotenv, find_dotenv
 from typing import List, Optional
-load_dotenv(find_dotenv('.env'))
+load_dotenv(find_dotenv('.env'), override=True)
 
 from components.kdb.gsheet.spreadsheet_utils import read_range, append_values
 

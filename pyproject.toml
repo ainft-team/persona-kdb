@@ -22,6 +22,7 @@ firebase-admin = "^6.2.0"
 pinecone-client = "^2.2.4"
 tiktoken = "^0.5.1"
 langchainhub = "^0.1.14"
+apscheduler = "^3.10.4"
 
 
 [build-system]

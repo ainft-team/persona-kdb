@@ -1,7 +1,7 @@
 from os import getenv
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv('.env'))
+load_dotenv(find_dotenv('.env'), override=True)
 
 from google.cloud.firestore_v1.client import Client
 

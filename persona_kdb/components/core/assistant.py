@@ -1,6 +1,6 @@
 from langchain.agents.openai_assistant import OpenAIAssistantRunnable
 from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv('.env'))
+load_dotenv(find_dotenv('.env'), override=True)
 
 # using langchain
 
