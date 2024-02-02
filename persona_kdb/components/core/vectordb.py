@@ -23,7 +23,7 @@ Pinecone = _import_pinecone()(
     index=index,
     embedding=OpenAIEmbeddings(openai_api_key=getenv("OPENAI_API_KEY")),
     text_key="text",
-    namespace=getenv("PINECONE_NAMESPACE", "kdb_soulfiction"),
+    namespace=getenv("PINECONE_NAMESPACE"),
     distance_strategy="DOT_PRODUCT",
 )
 

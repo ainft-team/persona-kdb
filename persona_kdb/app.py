@@ -38,7 +38,7 @@ if __name__ == "__main__":
         pinecone.init(api_key=getenv("PINECONE_API_KEY"), 
                       environment=getenv("PINECONE_ENV", "northamerica-northeast1-gcp"))
         index = pinecone.Index(getenv("PINECONE_INDEX", "search-and-discovery"))
-        index.delete(namespace=getenv("PINECONE_NAMESPACE", "kdb_soulfiction"), delete_all=True)
+        index.delete(namespace=getenv("PINECONE_NAMESPACE", "kdb_soulfiction_dev"), delete_all=True)
         # update vector database
         vdb_update(docs=docs, chunk_size=200, chunk_overlap=0)
     uvicorn.run(app=app, host="0.0.0.0", port=5555, workers=1)
