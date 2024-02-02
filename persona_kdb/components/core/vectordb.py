@@ -1,6 +1,6 @@
 from os import getenv
 from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv('.env'))
+load_dotenv(find_dotenv('.env'), override=True)
 
 from langchain import hub
 from langchain.chat_models import ChatOpenAI
@@ -23,7 +23,7 @@ Pinecone = _import_pinecone()(
     index=index,
     embedding=OpenAIEmbeddings(openai_api_key=getenv("OPENAI_API_KEY")),
     text_key="text",
-    namespace=getenv("PINECONE_NAMESPACE", "kdb_soulfiction"),
+    namespace=getenv("PINECONE_NAMESPACE"),
     distance_strategy="DOT_PRODUCT",
 )
 
@@ -61,7 +61,7 @@ def vdb_index():
     vectorstore = Pinecone.from_existing_index(
         index_name=getenv("PINECONE_INDEX", "search-and-discovery"),
         embedding=OpenAIEmbeddings(openai_api_key=getenv("OPENAI_API_KEY")),
-        namespace=getenv("PINECONE_NAMESPACE", "kdb_soulfiction"),
+        namespace=getenv("PINECONE_NAMESPACE"),
     )
     return vectorstore
 def vdb_retriever(search_type="similarity_score_threshold", vectorstore=vdb_index(), **search_kwargs):

@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv('.env'))
+load_dotenv(find_dotenv('.env'), override=True)
 
 from components.kdb.gsheet.types import ValueInputOption, MessageType, SpreadSheetRow
 
