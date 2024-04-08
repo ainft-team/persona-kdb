@@ -38,3 +38,6 @@ class SoulstoneRewardModel(BaseModel):
     summarized_knowledge: Optional[str]
     reason: Optional[str]
     timestamp: Optional[Union[float, str, datetime]]
+
+class MockSingleModel(BaseModel):
+    value: Optional[float]

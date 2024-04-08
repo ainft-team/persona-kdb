@@ -1,15 +1,13 @@
 from os import getenv
 from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv, find_dotenv
+from datetime import datetime, timedelta
 load_dotenv(find_dotenv('.env'), override=True)
 
 from google.cloud.firestore_v1.client import Client
 
 # put lru_cache here
-
-
-
-
 class QueryPreset:
     @staticmethod
     def collection_list(client: Client) -> str:
@@ -77,6 +75,42 @@ class FirebaseUtils:
             messages = client.collection("v2_messages").document(child_message_id).get()
             if messages.exists:
                 return messages.to_dict()["rootMessageId"]
+            else:
+                return None
+        except Exception as e:
+            print(e)
+            return None
+    @staticmethod
+    def create_user_mock_message(
+        client: Client, 
+        evm_address: str, 
+        root_message_id: Optional[str], 
+        content: str
+    ):
+        try:
+            now = datetime.utcnow() + timedelta(hours=9)
+            #NOTE: to clarify that the message is a mock message in /v2_messages/{message_id}
+            mock_offset = 7700000000000000000
+            message_id = mock_offset + now.timestamp()
+
+            user_message = client.collection("v2_messages").document(message_id).set({
+                "content": content,
+                "createdAt": now,
+                "messageId": message_id,
+                "rootMessageId": root_message_id,
+                "senderId": evm_address,
+                "type": "user_reply" if root_message_id else "user_first"
+            })
+            import pdb; pdb.set_trace()
+        except Exception as e:
+            print(e)
+            return None
+    @staticmethod
+    def get_soulstone(client: Client, evm_address: str):
+        try:
+            messages = client.collection("mock_soulstone").document(evm_address).get()
+            if messages.exists:
+                return messages.to_dict()["balance"]
             else:
                 return None
         except Exception as e:
