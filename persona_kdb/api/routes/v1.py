@@ -37,6 +37,7 @@ from components.core.chatbot import (
     mars_with_knowledge,
     mars_evaluation,
     mars_questionaire,
+    mars_with_knowledge_web
 )
 from components.kdb.firebase import FirebaseUtils
 from components.kdb.gsheet.trainable_data import (
