@@ -37,6 +37,7 @@ from components.core.chatbot import (
     mars_with_knowledge,
     mars_evaluation,
     mars_questionaire,
+    mars_with_knowledge_web
 )
 from components.kdb.firebase import FirebaseUtils
 from components.kdb.gsheet.trainable_data import (
@@ -62,49 +63,6 @@ async def generate_question(
         status=MessageStatus.SUCCESS,
         content=question,
         to_user_id=recipient_id,
-        timestamp=now(),
-    ).dict()
-
-@v1_router.post("/mock_reply", response_model=MarsReplyMessageModel)
-async def mock_reply(
-    content: str = Query(...,
-                    description="user's input query to the Mars",
-                    example="Hi Elon, how are you?"),
-    evm_address: str = Query(..., description="user's ethereum address", example="0x8809537C69B9958B5F5c5aDf46A47E99754890A8"),
-    parent_message_id: str = Query(None, description="discord parent message ID", example="10000000000000"),
-    db = Depends(get_db),
-):
-    try:
-        prev_user_message = FirebaseUtils.create_user_mock_message(
-            client=db,
-            evm_address=evm_address,
-            root_message_id=parent_message_id,
-            content=content,
-        )
-
-        response = mars_with_knowledge(
-            parent_message_id=user_message_id,
-            db=db,
-            input=content,
-        )
-        # output parsing
-        response = response.strip("```json").strip("```").strip("\n")
-        response = json.loads(response)
-        conversation_id = FirebaseUtils.get_root_message_id(db, parent_message_id)
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal Server Error on reply or parse error {'' if not _debug else str(e)}"
-        )
-    return MarsReplyMessageModel(
-        status=MessageStatus.SUCCESS,
-        type=MessageType.ASSISTANT_REPLY if response["reward_triggering"] == False else MessageType.REQUEST_REWARD,
-        content=response["output"],
-        from_user_id=sender_id,
-        from_username=f"{sender_name}#{sender_discriminator}",
-        from_conversation_id=conversation_id,
-        parent_message_id=parent_message_id,
         timestamp=now(),
     ).dict()
 

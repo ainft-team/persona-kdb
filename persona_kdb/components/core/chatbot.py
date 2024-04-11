@@ -136,6 +136,39 @@ def mars_chain_factory(**kwargs):
     )
     return chain
 
+def mars_with_knowledge_web_chain_factory(**kwargs):
+    sheet_id = kwargs.get("sheet_id")
+    output_key = kwargs.get("output_key", "output")
+    firebase_client: Client = kwargs.get("db")
+    prev_messages = kwargs.get("prev_messages")
+
+    prompt = PromptTemplate(
+        template=get_persona_template(sheet_id),
+        input_variables=get_variable_keys(sheet_id, 'B2:B2'),
+    )
+    retriever = vdb_retriever(
+        "similarity", 
+        vdb_index(), 
+        k=5 # k should be 2 or less
+    )
+    conversation_history = RunnableLambda(
+        lambda _: prev_messages
+    )
+    # import pdb; pdb.set_trace()
+
+    rag_chain = (
+        {
+            "context": retriever | format_docs,
+            "conversation_history": conversation_history,
+            "question": RunnablePassthrough(),
+        }
+        | prompt
+        | gpt3_5_chat
+        | StrOutputParser()
+    )
+
+    return rag_chain
+
 #####
 # Chain with each prompt
 #####
@@ -196,5 +229,25 @@ def mars(input="Hello, Elon?"):
     # if trainable:
     #     memory.save_context({"input": input}, {"output": output})
     
+    return output
+
+def mars_with_knowledge_web(
+    prev_messages,
+    db,
+    input="Hello, Elon?",
+):
+    """
+        chains for soulfiction-allinone(web version).
+        Input prev messages directly, not related with discord interface.
+    """
+    sheet_id = getenv("GOOGLE_SPREADSHEET_ID")
+
+    output = mars_with_knowledge_web_chain_factory(
+        sheet_id=sheet_id, 
+        output_key="output",
+        prev_messages=prev_messages,
+        db=db,
+    ).invoke(input)
+
     return output
 

@@ -40,4 +40,4 @@ class SoulstoneRewardModel(BaseModel):
     timestamp: Optional[Union[float, str, datetime]]
 
 class MockSingleModel(BaseModel):
-    value: Optional[float]
+    value: Optional[Union[float, int]]

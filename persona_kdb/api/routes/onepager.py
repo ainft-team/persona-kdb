@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 import random
 from collections import Counter
 from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
+load_dotenv(find_dotenv(), override=True)
 
 from api.db import get_db
 from api.schema import (
@@ -26,16 +26,56 @@ from api.enums import (
     ConversationType,
 )
 from api.models import (
-    MockSingleModel
+    MockSingleModel,
+    MarsReplyMessageModel, 
 )
 from api.utils import now, encode_query
 
+from components.core.chatbot import (
+    mars_with_knowledge_web
+)
 from components.kdb.firebase import FirebaseUtils
 
 onepager_router = APIRouter()
 _debug=True
 infura_api_key = os.getenv("INFURA_API_KEY")
 w3 = Web3(Web3.HTTPProvider(f"https://mainnet.infura.io/v3/{infura_api_key}"))
+
+@onepager_router.post("/mock_reply", response_model=MarsReplyMessageModel)
+async def mock_reply(
+    content: str = Query(...,
+                    description="user's input query to the Mars",
+                    example="Hi Elon, how are you?"),
+    evm_address: str = Query(..., description="user's ethereum address", example="0x8809537C69B9958B5F5c5aDf46A47E99754890A8"),
+    prev_messages: List = Query([], description="the list of previous messages", example=[]),
+    db = Depends(get_db),
+):
+    try:
+        response = mars_with_knowledge_web(
+            prev_messages=prev_messages,
+            db=db,
+            input=content,
+        )
+        # output parsing
+        response = response.strip("```json").strip("```").strip("\n")
+        response = json.loads(response)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal Server Error - {'' if not _debug else str(e)}"
+        )
+
+    return MarsReplyMessageModel(
+        status=MessageStatus.SUCCESS,
+        type=MessageType.ASSISTANT_REPLY if response["reward_triggering"] == False else MessageType.REQUEST_REWARD,
+        content=response["output"],
+        from_user_id=evm_address,
+        from_username="mock_user",
+        from_conversation_id="mock_conversation",
+        parent_message_id="mock_parent_message_id",
+        timestamp=now(),
+    ).model_dump()
 
 @onepager_router.get("/soulstone", response_model=MockSingleModel)
 async def get_soulstone(
@@ -44,6 +84,7 @@ async def get_soulstone(
 ): 
     try:
         soulstone = FirebaseUtils.get_soulstone(db, evm_address)
+        print(soulstone)
         if soulstone:
             return MockSingleModel(
                 value=soulstone,
@@ -100,7 +141,6 @@ async def get_soullink(
 
 @onepager_router.get("/multiplier", response_model=MockSingleModel)
 async def get_multiplier(
-    evm_address: str = Query(..., description="EVM address", example="0x8809537C69B9958B5F5c5aDf46A47E99754890A8"),
     soullink_balance: int = Query(..., description="SoulLink balance", example=1),
 ): 
     try:

@@ -110,7 +110,18 @@ class FirebaseUtils:
         try:
             messages = client.collection("mock_soulstone").document(evm_address).get()
             if messages.exists:
-                return messages.to_dict()["balance"]
+                return messages.to_dict()["value"]
+            else:
+                return None
+        except Exception as e:
+            print(e)
+            return None
+    @staticmethod
+    def get_soullink(client: Client, evm_address: str):
+        try:
+            messages = client.collection("mock_soullink").document(evm_address).get()
+            if messages.exists:
+                return messages.to_dict()["value"]
             else:
                 return None
         except Exception as e:
