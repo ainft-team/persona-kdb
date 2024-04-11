@@ -3,7 +3,7 @@ from web3 import Web3
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse # for SSE(Server Sent Events)
 # from apscheduler.schedulers.background import BackgroundScheduler
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 import random
 from collections import Counter
 from dotenv import load_dotenv, find_dotenv
@@ -47,7 +47,12 @@ async def mock_reply(
                     description="user's input query to the Mars",
                     example="Hi Elon, how are you?"),
     evm_address: str = Query(..., description="user's ethereum address", example="0x8809537C69B9958B5F5c5aDf46A47E99754890A8"),
-    prev_messages: List = Query([], description="the list of previous messages", example=[]),
+    prev_messages: Optional[List] = Query([], 
+                                description="the list of previous messages", 
+                                example=[
+                                    "User: Hi Elon, how are you?", 
+                                    "Assistant: I'm fine, thank you. How can I help you today?"]
+                                ),
     db = Depends(get_db),
 ):
     try:

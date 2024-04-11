@@ -241,6 +241,10 @@ def mars_with_knowledge_web(
         Input prev messages directly, not related with discord interface.
     """
     sheet_id = getenv("GOOGLE_SPREADSHEET_ID")
+    # parsed_prev_messages = []
+    # for prev_message in prev_messages:
+    #     parsed_message = f"{prev_message['name']}: {prev_message['text']}"
+    #     parsed_prev_messages.append(parsed_message)
 
     output = mars_with_knowledge_web_chain_factory(
         sheet_id=sheet_id, 
