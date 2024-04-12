@@ -17,6 +17,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8102",
+        "https://soulfiction-allinone.vercel.app",
         getenv("DISCORD_BOT_HOST")
     ],
     allow_credentials=True,
