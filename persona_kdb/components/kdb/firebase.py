@@ -117,6 +117,16 @@ class FirebaseUtils:
             print(e)
             return None
     @staticmethod
+    def give_soulstone(client: Client, evm_address: str, amount: int):
+        try:
+            prev_value = FirebaseUtils.get_soulstone(client, evm_address)
+            updated = client.collection("mock_soulstone").document(evm_address).set({
+                "value": prev_value + amount,
+            })
+        except Exception as e:
+            print(e)
+            return None
+    @staticmethod
     def get_soullink(client: Client, evm_address: str):
         try:
             messages = client.collection("mock_soullink").document(evm_address).get()
