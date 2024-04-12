@@ -28,15 +28,20 @@ from api.enums import (
 from api.models import (
     MockSingleModel,
     MarsReplyMessageModel, 
+    SoulstoneRewardModel
 )
 from api.utils import now, encode_query
 
 from components.core.chatbot import (
-    mars_with_knowledge_web
+    mars_with_knowledge_web,
+    mars_evaluation,
 )
 from components.kdb.firebase import FirebaseUtils
+from components.kdb.gsheet.trainable_data import (
+    append_knowledge
+)
 
-onepager_router = APIRouter()
+onepager_router = APIRouter(prefix='/onepager')
 _debug=True
 infura_api_key = os.getenv("INFURA_API_KEY")
 w3 = Web3(Web3.HTTPProvider(f"https://mainnet.infura.io/v3/{infura_api_key}"))
@@ -66,10 +71,20 @@ async def mock_reply(
         response = json.loads(response)
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal Server Error - {'' if not _debug else str(e)}"
-        )
+        # raise HTTPException(
+        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     detail=f"Internal Server Error - {'' if not _debug else str(e)}"
+        # )
+        return MarsReplyMessageModel(
+            status=MessageStatus.ERROR,
+            type=MessageType.ASSISTANT_REPLY,
+            content="Mars doesn't work properly, refresh and try again",
+            from_user_id=evm_address,
+            from_username="mock_user",
+            from_conversation_id="mock_conversation",
+            parent_message_id="mock_parent_message_id",
+            timestamp=now(),
+        ).model_dump()
 
     return MarsReplyMessageModel(
         status=MessageStatus.SUCCESS,
@@ -79,6 +94,57 @@ async def mock_reply(
         from_username="mock_user",
         from_conversation_id="mock_conversation",
         parent_message_id="mock_parent_message_id",
+        timestamp=now(),
+    ).model_dump()
+
+@onepager_router.post("/evaluate_conversation", response_model=SoulstoneRewardModel)
+async def evaluate_conversation(
+    evm_address: str = Query(..., description="user's ethereum address", example="0x8809537C69B9958B5F5c5aDf46A47E99754890A8"),
+    messages: Optional[List] = Query([], 
+                                description="the list of previous messages", 
+                                example=[
+                                    "User: Hi Elon, how are you?", 
+                                    "Assistant: I'm fine, thank you. How can I help you today?"]
+                                ),
+    db = Depends(get_db),
+):
+    try:        
+        response = mars_evaluation(
+            input=messages,
+        )
+        # output parsing
+        response = response.replace("\n", "").strip("```json").strip("```")
+        response = json.loads(response)
+
+        soullink_balance = (await get_soullink(evm_address=evm_address))['value']
+        multiplier = (await get_multiplier(soullink_balance=soullink_balance))['value']
+
+        reward_amount = float(multiplier) * response["score"]
+        if reward_amount > 0:
+            # append the summary of conversation to gsheet trainable_data
+            append_knowledge(
+                conversation_id="web_mock",
+                knowledge_type="conversation",
+                content=response["summary"],
+                created_at=now(),
+                user_id=evm_address,
+                reward=reward_amount,
+            )
+            FirebaseUtils.give_soulstone(db, evm_address, reward_amount)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal Server Error, the core langchain doesn't work{'' if not _debug else str(e)}"
+        )
+    return SoulstoneRewardModel(
+        status=SoulstoneRewardStatus.ACCEPTED if response['score'] > 0 else SoulstoneRewardStatus.REJECTED,
+        recipient_id=evm_address,
+        conversation_id="web_mock",
+        multiplier=multiplier,
+        amount=reward_amount,
+        summarized_knowledge=response['summary'],
+        reason=response['reason'],
         timestamp=now(),
     ).model_dump()
 
