@@ -33,4 +33,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.update_vectordb:
         scheduling()
-    uvicorn.run(app=app, host="0.0.0.0", port=5555, workers=1)
+    uvicorn.run(
+        app=app, 
+        host="0.0.0.0", 
+        port=5555, 
+        workers=1,
+        ssl_keyfile=getenv("SSL_KEYFILE"),
+        ssl_certfile=getenv("SSL_CERTFILE")
+    )
