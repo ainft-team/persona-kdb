@@ -176,39 +176,45 @@ async def get_soullink(
     evm_address: str = Query(..., description="EVM address", example="0x8809537C69B9958B5F5c5aDf46A47E99754890A8"),
     db = Depends(get_db),
 ):
-    # The contract address of the NFT and the account address
-    nft_contract_address = '0xd6dbfb58c956949E3016151163ed6fD4301C4CE7'
+    try:
+        # The contract address of the NFT and the account address
+        nft_contract_address = '0xd6dbfb58c956949E3016151163ed6fD4301C4CE7'
 
-    # ABI of the contract (simplified)
-    abi = [{
-        "constant": True,
-        "inputs": [
-            {
-            "name": "_owner",
-            "type": "address"
-            }
-        ],
-        "name": "balanceOf",
-        "outputs": [
-            {
-            "name": "",
-            "type": "uint256"
-            }
-        ],
-        "payable": False,
-        "stateMutability": "view",
-        "type": "function"
-    }]  # Add the ABI of the contract here
+        # ABI of the contract (simplified)
+        abi = [{
+            "constant": True,
+            "inputs": [
+                {
+                "name": "_owner",
+                "type": "address"
+                }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+                {
+                "name": "",
+                "type": "uint256"
+                }
+            ],
+            "payable": False,
+            "stateMutability": "view",
+            "type": "function"
+        }]  # A`dd the ABI of the contract here
 
-    # Create a contract object
-    contract = w3.eth.contract(address=nft_contract_address, abi=abi)
-    
-    wallet = w3.to_checksum_address(evm_address)
-    balance = contract.functions.balanceOf(wallet).call()
+        # Create a contract object
+        contract = w3.eth.contract(address=nft_contract_address, abi=abi)
+        
+        wallet = w3.to_checksum_address(evm_address)
+        balance = contract.functions.balanceOf(wallet).call()
 
-    return MockSingleModel(
-        value=balance,
-    ).model_dump()
+        return MockSingleModel(
+            value=balance,
+        ).model_dump()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal Server Error on get_soullink: {'' if not _debug else str(e)}"
+        )
 
 @onepager_router.get("/multiplier", response_model=MockSingleModel)
 async def get_multiplier(
