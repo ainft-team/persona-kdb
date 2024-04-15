@@ -28,7 +28,7 @@ def get_persona_info(sheet_id) -> Dict:
 def get_variable_keys(sheet_id, sheet_range=None) -> List[str]:
     try:
         sheet_name = 'persona'
-        sheet_range = f'{sheet_name}!B2:B2' if sheet_range is None else f'{sheet_name}!{sheet_range}'
+        sheet_range = f'{sheet_name}!B7:B7' if sheet_range is None else f'{sheet_name}!{sheet_range}'
         fetched = read_range(sheet_id, sheet_range)[0][0].split(', ')
         return fetched
     except HttpError as err:
@@ -37,7 +37,7 @@ def get_variable_keys(sheet_id, sheet_range=None) -> List[str]:
 def get_persona_template(sheet_id, version='latest') -> str:
     try:
         sheet_name = 'persona'
-        sheet_range = f'{sheet_name}!A18:B30'
+        sheet_range = f'{sheet_name}!A9:B30' # reply
         fetched = read_range(sheet_id, sheet_range)
         version_list = [_version for _version, prompt in fetched]
         if version in version_list:
@@ -48,7 +48,7 @@ def get_persona_template(sheet_id, version='latest') -> str:
 def get_questionaire_template(sheet_id, version='latest') -> str:
     try:
         sheet_name = 'persona'
-        sheet_range = f'{sheet_name}!C18:D30'
+        sheet_range = f'{sheet_name}!C9:D30' # questionaire
         fetched = read_range(sheet_id, sheet_range)
         version_list = [_version for _version, prompt in fetched]
         if version in version_list:
@@ -58,7 +58,7 @@ def get_questionaire_template(sheet_id, version='latest') -> str:
 def get_evaluation_template(sheet_id, version='latest') -> str:
     try:
         sheet_name = 'persona'
-        sheet_range = f'{sheet_name}!E18:F30'
+        sheet_range = f'{sheet_name}!E9:F30' # evaluate_conversation
         fetched = read_range(sheet_id, sheet_range)
         version_list = [_version for _version, prompt in fetched]
         if version in version_list:

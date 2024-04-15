@@ -39,7 +39,7 @@ def mars_openai_assistant_chain_factory(**kwargs):
 def mars_evaluation_chain_factory(**kwargs):
     sheet_id = kwargs.get("sheet_id")
     output_key = kwargs.get("output_key", "output")
-    input_vars= get_variable_keys(sheet_id, 'F2:F2')
+    input_vars= get_variable_keys(sheet_id, 'F7:F7')
 
     mars_template = PromptTemplate(
         template=get_evaluation_template(sheet_id),
@@ -58,7 +58,7 @@ def mars_evaluation_chain_factory(**kwargs):
 def mars_questionaire_chain_factory(**kwargs):
     sheet_id = kwargs.get("sheet_id")
     output_key = kwargs.get("output_key", "output")
-    input_vars= get_variable_keys(sheet_id, 'D2:D2')
+    input_vars= get_variable_keys(sheet_id, 'D7:D7')
 
     prompt = PromptTemplate(
         template=get_questionaire_template(sheet_id),
@@ -89,7 +89,7 @@ def mars_with_knowledge_chain_factory(**kwargs):
 
     prompt = PromptTemplate(
         template=get_persona_template(sheet_id),
-        input_variables=get_variable_keys(sheet_id, 'B2:B2'),
+        input_variables=get_variable_keys(sheet_id, 'B7:B7'),
     )
     retriever = vdb_retriever(
         "similarity", 
@@ -144,7 +144,7 @@ def mars_with_knowledge_web_chain_factory(**kwargs):
 
     prompt = PromptTemplate(
         template=get_persona_template(sheet_id),
-        input_variables=get_variable_keys(sheet_id, 'B2:B2'),
+        input_variables=get_variable_keys(sheet_id, 'B7:B7'),
     )
     retriever = vdb_retriever(
         "similarity", 
